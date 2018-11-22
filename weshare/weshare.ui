@@ -107,6 +107,7 @@ background-image:url(:img/bg.png);</string>
      <string notr="true">border-radius: 10px;
 background-color: #34495e;
 padding: 3px;
+font-size: 15px;
 color: #ffffff;</string>
     </property>
     <property name="text">
@@ -128,11 +129,15 @@ color: #ffffff;</string>
       <height>321</height>
      </rect>
     </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;List of selected file(s)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
     <property name="styleSheet">
      <string notr="true">border-radius: 5px;
 background-color: #34495e;
 padding: 5px;
-color: #ffffff;</string>
+color: #ffffff;
+font-size: 12px;</string>
     </property>
    </widget>
    <zorder>label</zorder>

@@ -4,7 +4,8 @@
 #include <QNetworkInterface>
 #include <QtWidgets>
 #include <QMessageBox>
-#define MAX 54
+#include <QClipboard>
+#define MAX 55
 
 static QProcess *proses = new QProcess;
 struct DATA{
@@ -28,7 +29,8 @@ struct DATA{
         "background-color: #ffffff;",
         "border-bottom:5px solid #0984e3;",
         "padding: 1%;",
-        "color: #0984e3;}",
+        "color: #0984e3;",
+        "margin: 1%;}",
         "a{",
         "float: right;",
         "margin:1%;",
@@ -128,6 +130,8 @@ void WeShare::on_share_clicked(){
     QFile indexopen("index.html");
     QStringList arg;
     DATA Data;
+    QMessageBox box;
+    QClipboard *copy = QApplication::clipboard();
 
     foreach(const QHostAddress &addr,QNetworkInterface::allAddresses())
         if(addr.protocol()==QAbstractSocket::IPv4Protocol && addr!=QHostAddress(QHostAddress::LocalHost))
@@ -135,27 +139,57 @@ void WeShare::on_share_clicked(){
 
     if(ip.isEmpty())
         ip="localhost";
-    ui->ipaddr->setText(ip.append(":8080"));
-    if(indexopen.open(QIODevice::WriteOnly)){
-        QTextStream write(&indexopen);
-        QString flname;
+    if(ui->fileList->count()<1){
+        box.setText("You aren't select any file?\nThen what you will share to your friends?");
+        box.setStyleSheet(
+            "color:#ffffff;"
+            "background-color:#2c3e50;"
+            "padding:5px;"
+            "font-size:15px;"
+        );
+        box.addButton(QMessageBox::Ok)->setStyleSheet(
+            "border:2px solid #2980b9;"
+            "border-radius:15px;"
+            "width:100px;"
+        );
+        box.exec();
+    }else{
+        ui->ipaddr->setText(ip.append(":8080"));
+        if(indexopen.open(QIODevice::WriteOnly)){
+            QTextStream write(&indexopen);
+            QString flname;
 
-        for(int line=0;line<MAX;line++){
-            if(Data.webView[line]=="<!--LINE-->"){
-                for(int scan=0;scan<(ui->fileList->count());scan++){
-                    flname=runicode(ftext(ui->fileList->item(scan)->text()));
-                    write<<"<div class=\"filelist\">\n";
-                    write<<"<a href=\""<<flname<<"\">&darr;</a>\n";
-                    write<<"<p>"<<flname<<"</p>\n";
-                    write<<"</div>\n";
-                }
-            }else
-                write<<Data.webView[line]<<"\n";
+            for(int line=0;line<MAX;line++){
+                if(Data.webView[line]=="<!--LINE-->"){
+                    for(int scan=0;scan<(ui->fileList->count());scan++){
+                        flname=runicode(ftext(ui->fileList->item(scan)->text()));
+                        write<<"<div class=\"filelist\">\n";
+                        write<<"<a href=\""<<flname<<"\">&darr;</a>\n";
+                        write<<"<p>"<<flname<<"</p>\n";
+                        write<<"</div>\n";
+                    }
+                }else
+                    write<<Data.webView[line]<<"\n";
+            }
+            indexopen.close();
         }
-        indexopen.close();
+        arg<<"-S"<<ip;
+        proses->start("php",arg);
+        copy->setText(QString(ip));
+        box.setText("Success!\nNow share the URL to your friends!");
+        box.setStyleSheet(
+            "color:#ffffff;"
+            "background-color:#2c3e50;"
+            "padding:5px;"
+            "font-size:15px;"
+        );
+        box.addButton(QMessageBox::Ok)->setStyleSheet(
+            "border:2px solid #2980b9;"
+            "border-radius:15px;"
+            "width:100px;"
+        );
+        box.exec();
     }
-    arg<<"-S"<<ip+":8080";
-    proses->start("php",arg);
 }
 
 void WeShare::on_browseFile_clicked(){
@@ -175,7 +209,6 @@ void WeShare::closeEvent(QCloseEvent *event){
         "border:2px solid #2980b9;"
         "border-radius:15px;"
         "width:100px;"
-        "margin-right:50px;"
     );
     ask.addButton(QMessageBox::No)->setStyleSheet(
         "border:2px solid #2980b9;"
@@ -186,6 +219,7 @@ void WeShare::closeEvent(QCloseEvent *event){
         "color:#ffffff;"
         "background-color:#2c3e50;"
         "padding:5px;"
+        "font-size: 15px;"
     );
 
     if(ask.exec() != QMessageBox::No){
